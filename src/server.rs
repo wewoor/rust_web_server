@@ -6,11 +6,18 @@ use std::{
     net::{TcpListener, TcpStream},
 };
 
+use rust_webserver::ThreadPool;
+
 pub fn single_web_server() {
     let listener = TcpListener::bind("127.0.0.1:3000").unwrap();
+    let pool = ThreadPool::new(4);
+
     for stream in listener.incoming() {
         let _stream = stream.unwrap();
-        handle_connection(_stream);
+
+        pool.exec(|| {
+            handle_connection(_stream);
+        });
     }
 }
 
