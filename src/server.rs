@@ -1,5 +1,7 @@
 use std::{
     fs,
+    thread,
+    time::{Duration},
     io::{Read, Write},
     net::{TcpListener, TcpStream},
 };
@@ -16,9 +18,13 @@ fn handle_connection(mut stream: TcpStream) {
     let mut buffer = [0; 1024];
     stream.read(&mut buffer).unwrap();
 
-    let get_method = b"GET / HTTP/1.1\r\n";
+    let get_req = b"GET / HTTP/1.1\r\n";
+    let sleep_req = b"GET /sleep HTTP/1.1\r\n";
 
-    let (status_line, filename) = if buffer.starts_with(get_method) {
+    let (status_line, filename) = if buffer.starts_with(get_req) {
+        ("HTTP/1.1 200 OK", "index.html")
+    } else if buffer.starts_with(sleep_req) {
+        thread::sleep(Duration::from_secs(5));
         ("HTTP/1.1 200 OK", "index.html")
     } else {
         ("HTTP/1.1 404 NOT FOUND", "404.html")
